@@ -7,6 +7,7 @@ To design and simulate a 4:1 Multiplexer (MUX) using Verilog HDL in four differe
 Vivado 2023.1
 
 ## Procedure
+```
 1. Launch Vivado
 Open Vivado 2023.1 by double-clicking the Vivado icon or searching for it in the Start menu.
 2. Create a New Project
@@ -52,7 +53,7 @@ Take screenshots of the waveform window and include them in your lab report to d
 You can include the timing diagram from the simulation window showing the correct functionality of the 4:1 MUX across different select inputs and data inputs.
 10. Close the Simulation
 Once done, close the simulation by going to Simulation → "Close Simulation".
-
+```
 ## Logic Diagram
 
 ![image](https://github.com/user-attachments/assets/d4ab4bc3-12b0-44dc-8edb-9d586d8ba856)
