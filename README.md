@@ -13,7 +13,7 @@ Open Vivado 2023.1 by double-clicking the Vivado icon or searching for it in the
 Click on "Create Project" from the Vivado Quick Start window.
 In the New Project Wizard:
 Project Name: Enter a name for the project (e.g., Mux4_to_1).
-Project Location: Select the folder where the project will be saved.![374428002-5a56fe04-e044-4b08-9d6a-32e186853568](https://github.com/user-attachments/assets/f38cd67d-013d-46ff-971a-6b128b171b1d)
+Project Location: Select the folder where the project will be saved.
 
 Click Next.
 Project Type: Select RTL Project, then click Next.
