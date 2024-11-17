@@ -61,60 +61,294 @@ Once done, close the simulation by going to Simulation → "Close Simulation".
 
 ## Verilog Code
 
-4:1 mux:
+## 4:1 Mux Gate-Level Impelement
 ```
-module mux4_1(I,s,y);
-input[3:0]I;
-input[1:0]s;
-output reg y;
-always@(I,s)
-begin
-   case(s)
-     2'b00:y<=I[0];
-     2'b01:y<=I[1];
-     2'b10:y<=I[2];
-     2'b11:y<=I[3];
-     default:y<=0;
-  endcase
- end   
+module mux_v( A, B, C, D, S0, S1, Y ); 
+input A;
+input B;
+input C;
+input D;
+input S0;
+input S1;
+output Y;
+wire not_S0, not_S1;
+wire A_and, B_and, C_and, D_and;
+
+
+not (not_S0, S0);
+not (not_S1, S1);
+
+
+and (A_and, A, not_S1, not_S0);
+and (B_and, B, not_S1, S0);
+and (C_and, C, S1, not_S0);
+and (D_and, D, S1, S0);
+
+
+or (Y, A_and, B_and, C_and, D_and);
 endmodule
 ```
 
-4:1 muxtb:
+## Testbench Code:
 ```
-module mux4_1tb;
-reg [3:0]i;
-reg [1:0]s;
-wire y;
-mux4_1 dut(i,s,y);
-initial
-begin
-i=4'b1100;
-s=2'b00;
-#100
-s=2'b01;
-#100
-s=2'b10;
-#100
-s=2'b11;
-//#100
-//$display("no value assigned");
+module multi_tb;
+    reg A, B, C, D;
+    reg S0, S1;
+    wire Y;
+
+    // Instantiate the multiplexer
+    mux_v u_mux_v(
+        .A(A), 
+        .B(B), 
+        .C(C), 
+        .D(D), 
+        .S0(S0), 
+        .S1(S1), 
+        .Y(Y)
+    );
+
+    initial begin
+        // Test case 1: Select A
+        A = 1; B = 0; C = 0; D = 0; S0 = 0; S1 = 0;
+        #10;
+
+        // Test case 2: Select B
+        A = 0; B = 1; C = 0; D = 0; S0 = 1; S1 = 0;
+        #10;
+        
+        // Test case 3: Select C
+        A = 0; B = 0; C = 1; D = 0; S0 = 0; S1 = 1;
+        #10;
+
+        // Test case 4: Select D
+        A = 0; B = 0; C = 0; D = 1; S0 = 1; S1 = 1;
+        #10;
+
+        
+
+        $finish;
+    end
+
+    // Monitor outputs
+    initial begin
+        $monitor("Time = %0t, A = %0d, B = %0d, C = %0d, D = %0d, S0 = %0d, S1 = %0d, Y = %0d",
+                 $time, A, B, C, D, S0, S1, Y);
+    end
+
+endmodule
+```
+OUTPUT:![370682851-fc6e4ec4-134c-472d-a5ae-d72549ed79c9](https://github.com/user-attachments/assets/69cfda06-235a-4341-83fd-8d72f8abbeb9)
+
+## 4:1 MUX Data Flow Implementation
+
+```
+module mux_v(a,b,c,d,s,y);
+input a;
+input b;
+input c;
+input d;
+input[1:0]s;
+output y;
+
+
+
+assign y = (s==2'b00)? a:
+            (s==2'b01)? b :
+            (s==2'b10)? c : d;
+
+endmodule
+```
+## Testbench Code:
+```
+module multi_tb;
+    reg a, b, c, d;
+    reg [1:0] s;
+    wire y;
+
+    // Instantiate the multiplexer
+    mux_v u_mux_v(
+        .a(a), 
+        .b(b), 
+        .c(c), 
+        .d(d), 
+        .s(s), 
+        .y(y)
+    );
+
+    initial begin
+        // Test case 1: Select a
+        a = 1; b = 0; c = 0; d = 0; s = 2'b00;
+        #10;
+
+        // Test case 2: Select b
+        a = 0; b = 1; c = 0; d = 0; s = 2'b01;
+        #10;
+
+        // Test case 3: Select c
+        a = 0; b = 0; c = 1; d = 0; s = 2'b10;
+        #10;
+
+        // Test case 4: Select d
+        a = 0; b = 0; c = 0; d = 1; s = 2'b11;
+        #10;
+
+                $finish;
+    end
+
+    // Monitor outputs
+    initial begin
+        $monitor("Time = %0t, a = %0d, b = %0d, c = %0d, d = %0d, s = %0b, y = %0d",
+                 $time, a, b, c, d, s, y);
+    end
+
+endmodule
+```
+## OUTPUT:![370702142-c9e37dc7-4435-466b-ab7e-1728245fa1f8](https://github.com/user-attachments/assets/6ce9efe0-b2f4-4ab7-84ba-6d1a5b6acc5f)
+
+## 4:1 MUX Behavioral Implementation
+```
+module mux_v(a,b,c,d,s,y);
+input a;
+input b;
+input c;
+input d;
+input[1:0]s;
+output reg y;
+
+always@(*)begin
+
+y <= (s==2'b00)? a:
+     (s==2'b01)? b :
+     (s==2'b10)? c : d;
 end
 endmodule
 ```
-OUTPUT:![374428002-5a56fe04-e044-4b08-9d6a-32e186853568](https://github.com/user-attachments/assets/f38cd67d-013d-46ff-971a-6b128b171b1d)
-
-
-
-## Sample Output
+## Testbench Code:
 ```
+module multi_tb;
+    reg a, b, c, d;
+    reg [1:0] s;
+    wire y;
 
-Time=0 | S1=0 S0=0 | Inputs: A=0 B=0 C=0 D=0 | Y_gate=0 | Y_dataflow=0 | Y_behavioral=0 | Y_structural=0
-Time=10 | S1=0 S0=0 | Inputs: A=0 B=0 C=0 D=0 | Y_gate=0 | Y_dataflow=0 | Y_behavioral=0 | Y_structural=0
-Time=20 | S1=0 S0=0 | Inputs: A=0 B=0 C=0 D=1 | Y_gate=0 | Y_dataflow=0 | Y_behavioral=0 | Y_structural=0
-Time=30 | S1=0 S0=1 | Inputs: A=0 B=0 C=0 D=1 | Y_gate=0 | Y_dataflow=0 | Y_behavioral=0 | Y_structural=0
-Time=40 | S1=1 S0=0 | Inputs: A=0 B=0 C=0 D=1 | Y_gate=0 | Y_dataflow=0 | Y_behavioral=0 | Y_structural=0
+    // Instantiate the multiplexer
+    mux_v u_mux_v(
+        .a(a), 
+        .b(b), 
+        .c(c), 
+        .d(d), 
+        .s(s), 
+        .y(y)
+    );
+
+    initial begin
+        // Test case 1: Select input a
+        a = 1; b = 0; c = 0; d = 0; s = 2'b00;
+        #10;
+
+        // Test case 2: Select input b
+        a = 0; b = 1; c = 0; d = 0; s = 2'b01;
+        #10;
+
+        // Test case 3: Select input c
+        a = 0; b = 0; c = 1; d = 0; s = 2'b10;
+        #10;
+        
+        // Test case 4: Select input d
+        a = 0; b = 0; c = 0; d = 1; s = 2'b11;
+        #10;
+
+        $finish;
+    end
+
+    // Monitor outputs
+    initial begin
+        $monitor("Time = %0t, a = %0d, b = %0d, c = %0d, d = %0d, s = %0b, y = %0d",
+                 $time, a, b, c, d, s, y);
+    end
+
+endmodule
 ```
+## OUTPUT:![370702946-23bbfe8d-377e-4b68-a0bb-e511eb9b85fb](https://github.com/user-attachments/assets/e33b243e-7adb-43f8-a820-46fa96d95536)
+
+## 4:1 MUX Structural Implementation
+```
+module mux_v(
+    a, b, c, d,  // Inputs
+    s0, s1,      // Select lines
+    y           // Output
+);
+
+    input a, b, c, d;
+    input s0, s1;
+    output y;
+
+    wire not_s0, not_s1;
+    wire a_and, b_and, c_and, d_and;
+
+    // Invert select lines
+    not u_not_s0(not_s0, s0);
+    not u_not_s1(not_s1, s1);
+
+    // AND gates for each input
+    and u_a_and(a_and, a, not_s1, not_s0);
+    and u_b_and(b_and, b, not_s1, s0);
+    and u_c_and(c_and, c, s1, not_s0);
+    and u_d_and(d_and, d, s1, s0);
+
+    // OR gate to combine AND outputs
+    or u_or(y, a_and, b_and, c_and, d_and);
+
+endmodule
+```
+## Testbench Code:
+```
+module multi_tb;
+    reg a, b, c, d;
+    reg s0, s1;
+    wire y;
+
+    // Instantiate the multiplexer
+    mux_v u_mux_v(
+        .a(a), 
+        .b(b), 
+        .c(c), 
+        .d(d), 
+        .s0(s0), 
+        .s1(s1), 
+        .y(y)
+    );
+
+    initial begin
+        // Test case 1: Select a
+        a = 1; b = 0; c = 0; d = 0; s0 = 0; s1 = 0;
+        #10;
+
+        // Test case 2: Select b
+        a = 0; b = 1; c = 0; d = 0; s0 = 1; s1 = 0;
+        #10;
+
+        // Test case 3: Select c
+        a = 0; b = 0; c = 1; d = 0; s0 = 0; s1 = 1;
+        #10;
+
+        // Test case 4: Select d
+        a = 0; b = 0; c = 0; d = 1; s0 = 1; s1 = 1;
+        #10;
+        
+        $finish;
+    end
+
+    // Monitor outputs
+    initial begin
+        $monitor("Time = %0t, a = %0d, b = %0d, c = %0d, d = %0d, s0 = %0d, s1 = %0d, y = %0d",
+                 $time, a, b, c, d, s0, s1, y);
+    end
+
+endmodule
+```
+## OUTPUT:![370703404-12a0f7fc-5a87-40bc-a917-15ffe0b0add2](https://github.com/user-attachments/assets/19e5cd58-fc14-436d-a652-8ddd926e167e)
+
+
 
 ## Conclusion:
 
